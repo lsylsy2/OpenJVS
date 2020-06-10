@@ -3,6 +3,9 @@
 #include "config.h"
 #include "debug.h"
 
+#include <time.h>
+#include <stdint.h>
+
 /* The deviceID is set to 1 to allow the system to work after a reboot of OpenJVS */
 int deviceID = 1;
 
@@ -16,6 +19,45 @@ JVSPacket inputPacket, outputPacket;
 
 /* The in and out buffer used to read and write to and from */
 unsigned char outputBuffer[JVS_MAX_PACKET_SIZE], inputBuffer[JVS_MAX_PACKET_SIZE];
+
+void idolmasterDealWithGPO(unsigned char gpo)
+{
+	static uint64_t startTimeStamp = 0;
+	debug(1, "Simulating shutter for THE iDOLM@STER\n");
+	struct timespec spec;
+	clock_gettime(CLOCK_MONOTONIC, &spec);
+	uint64_t nowTimeStamp = spec.tv_sec*1000 + spec.tv_nsec / 1000000;
+	setSwitch(0, 1<<3, 1);
+	if (gpo & 0x10)
+	{
+		if ((nowTimeStamp - startTimeStamp)%6000 < 1000) {
+			setSwitch(1, 1<<3, 1);
+		} else {
+			setSwitch(1, 1<<3, 0);
+		}
+		if (((nowTimeStamp - startTimeStamp)%6000 > 2000)&&((nowTimeStamp - startTimeStamp)%6000 < 5000)) {
+			setSwitch(1, 1<<0, 1);
+		} else {
+			setSwitch(1, 1<<0, 0);
+		}
+		if (((nowTimeStamp - startTimeStamp)%6000 > 3000)&&((nowTimeStamp - startTimeStamp)%6000 < 4000)) {
+			setSwitch(1, 1<<2, 1);
+		} else {
+			setSwitch(1, 1<<2, 0);
+		}
+		if (nowTimeStamp - startTimeStamp > 7000) {
+			setSwitch(1, 1<<3, 1);
+			setSwitch(1, 1<<2, 0);
+			setSwitch(1, 1<<0, 0);
+		}
+	} else {
+		startTimeStamp = nowTimeStamp;
+		setSwitch(1, 1<<3, 1);
+		setSwitch(1, 1<<2, 0);
+		setSwitch(1, 1<<0, 0);
+	}
+}
+
 
 /**
  * Initialise the JVS emulation
@@ -364,6 +406,10 @@ JVSStatus processPacket()
 			size = 2 + inputPacket.data[index + 1];
 			outputPacket.data[outputPacket.length] = REPORT_SUCCESS;
 			outputPacket.length += 1;
+
+			if (!strcmp(localConfig->defaultGamePath, "idolmaster")) {
+				idolmasterDealWithGPO(inputPacket.data[index + 1]);
+			}
 		}
 		break;
 
@@ -386,7 +432,7 @@ JVSStatus processPacket()
 		case CMD_WRITE_ANALOG:
 		{
 			debug(1, "CMD_WRITE_ANALOG\n");
-			size = inputPacket.data[index + 1] + 2;
+			size = (inputPacket.data[index + 1] * 2) + 2;
 			outputPacket.data[outputPacket.length++] = REPORT_SUCCESS;
 		}
 		break;
@@ -465,16 +511,59 @@ JVSStatus processPacket()
 		}
 		break;
 
+
 		default:
 		{
-			if (inputPacket.data[index] == CMD_NAMCO_SPECIFIC)
+			if ((inputPacket.data[index] == CMD_NAMCO_SPECIFIC) && (strstr(localCapabilities->name, "namco"))) {
 				debug(1, "CMD_NAMCO_SPECIFIC (Command shown below)\n");
+				switch (inputPacket.data[index + 1])
+				{
+					case 0x18:
+					{
+						size = 0xff; // End this conversation
+						outputPacket.data[outputPacket.length] = 0x01;
+						outputPacket.data[outputPacket.length + 1] = 0x01;
+						outputPacket.length += 2;
+					}
+					break;
 
-			debug(0, "CMD_UNSUPPORTED (Unsupported command [0x%02hhX])\n", inputPacket.data[index]);
-			outputPacket.length = 1;
-			outputPacket.data[0] = STATUS_UNSUPPORTED;
-			writePacket(&outputPacket);
-			return JVS_STATUS_ERROR_UNSUPPORTED_COMMAND;
+					// case 0x05:
+					// {
+
+					// }
+					// break;
+
+					// case 0x05:
+					// {
+
+					// }
+					// break;
+
+					// case 0x05:
+					// {
+
+					// }
+					// break;
+
+					// case 0x05:
+					// {
+
+					// }
+					// break;
+
+					default:
+					{
+
+					}
+					break;
+				}
+			} else {
+				debug(0, "CMD_UNSUPPORTED (Unsupported command [0x%02hhX])\n", inputPacket.data[index]);
+				outputPacket.length = 1;
+				outputPacket.data[0] = STATUS_UNSUPPORTED;
+				writePacket(&outputPacket);
+				return JVS_STATUS_ERROR_UNSUPPORTED_COMMAND;
+			}
 		}
 		}
 		index += size;

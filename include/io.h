@@ -193,13 +193,32 @@ static const JVSCapabilities NAMCO_JYU_IO = {
     .gunYBits = 16,
     .displayName = "Namco JYU IO"};
 
+static const JVSCapabilities NAMCO_FCB_IO = {
+    .name = "namco ltd.;FCB;Ver1.02;JPN,TouchPanel&Multipurpose",
+    .commandVersion = 0x13,
+    .jvsVersion = 0x20,
+    .commsVersion = 0x30,
+    .players = 0x01, //01 01 10 00
+    .switches = 0x10,
+    .coins = 0x02, //02 02 00 00
+    .analogueInChannels = 0x07, //03 07 0A 00
+	.analogueInBits = 0x0a,
+	.rotaryChannels = 0x02, //04 02 00 00
+    .gunXBits = 0x10, //06 10 10 01
+    .gunYBits = 0x10,
+    .gunChannels = 0x01,
+    .generalPurposeOutputs = 0x06, //12 06 00 00
+	.analogueOutChannels = 0x02, //13 02 00 00
+    .displayName = "Namco FCB IO"};
+
 static const struct
 {
     const char *string;
     const JVSCapabilities capabilities;
 } jvsCapabilitiesConversion[] = {
     {"SEGA_TYPE_3_IO", SEGA_TYPE_3_IO},
-    {"NAMCO_JYU_IO", NAMCO_JYU_IO}};
+    {"NAMCO_JYU_IO", NAMCO_JYU_IO},
+    {"NAMCO_FCB_IO", NAMCO_FCB_IO}};
 
 JVSCapabilities *getCapabilities();
 JVSState *getState();
