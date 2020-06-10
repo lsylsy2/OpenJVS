@@ -23,38 +23,39 @@ unsigned char outputBuffer[JVS_MAX_PACKET_SIZE], inputBuffer[JVS_MAX_PACKET_SIZE
 void idolmasterDealWithGPO(unsigned char gpo)
 {
 	static uint64_t startTimeStamp = 0;
-	debug(1, "Simulating shutter for THE iDOLM@STER\n");
 	struct timespec spec;
 	clock_gettime(CLOCK_MONOTONIC, &spec);
 	uint64_t nowTimeStamp = spec.tv_sec*1000 + spec.tv_nsec / 1000000;
-	setSwitch(0, 1<<3, 1);
+	setSwitch(0, BUTTON_TILT_4, 1);
 	if (gpo & 0x10)
 	{
+		debug(1, "Simulating shutter for THE iDOLM@STER\n");
 		if ((nowTimeStamp - startTimeStamp)%6000 < 1000) {
-			setSwitch(1, 1<<3, 1);
+			setSwitch(1, BUTTON_LEFT, 1);
 		} else {
-			setSwitch(1, 1<<3, 0);
+			setSwitch(1, BUTTON_LEFT, 0);
 		}
 		if (((nowTimeStamp - startTimeStamp)%6000 > 2000)&&((nowTimeStamp - startTimeStamp)%6000 < 5000)) {
-			setSwitch(1, 1<<0, 1);
+			setSwitch(1, BUTTON_2, 1);
 		} else {
-			setSwitch(1, 1<<0, 0);
+			setSwitch(1, BUTTON_2, 0);
 		}
 		if (((nowTimeStamp - startTimeStamp)%6000 > 3000)&&((nowTimeStamp - startTimeStamp)%6000 < 4000)) {
-			setSwitch(1, 1<<2, 1);
+			setSwitch(1, BUTTON_RIGHT, 1);
 		} else {
-			setSwitch(1, 1<<2, 0);
+			setSwitch(1, BUTTON_RIGHT, 0);
 		}
-		if (nowTimeStamp - startTimeStamp > 7000) {
-			setSwitch(1, 1<<3, 1);
-			setSwitch(1, 1<<2, 0);
-			setSwitch(1, 1<<0, 0);
-		}
+		// if (nowTimeStamp - startTimeStamp > 7000) {
+			// setSwitch(1, BUTTON_LEFT, 1);
+			// setSwitch(1, BUTTON_RIGHT, 0);
+			// setSwitch(1, BUTTON_2, 0);
+		// }
 	} else {
+		debug(1, "Resetting shutter for THE iDOLM@STER\n");
 		startTimeStamp = nowTimeStamp;
-		setSwitch(1, 1<<3, 1);
-		setSwitch(1, 1<<2, 0);
-		setSwitch(1, 1<<0, 0);
+		setSwitch(1, BUTTON_LEFT, 1);
+		setSwitch(1, BUTTON_RIGHT, 0);
+		setSwitch(1, BUTTON_2, 0);
 	}
 }
 
@@ -408,7 +409,7 @@ JVSStatus processPacket()
 			outputPacket.length += 1;
 
 			if (!strcmp(localConfig->defaultGamePath, "idolmaster")) {
-				idolmasterDealWithGPO(inputPacket.data[index + 1]);
+				idolmasterDealWithGPO(inputPacket.data[index + 2]);
 			}
 		}
 		break;
