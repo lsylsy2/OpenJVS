@@ -59,6 +59,15 @@ void idolmasterDealWithGPO(unsigned char gpo)
 	}
 }
 
+void printPacket(JVSPacket *msg)
+{
+    if (getConfig()->debugLevel < 2) return;
+    for (uint32_t i = 0; i < msg->length; i++)
+    {
+      debug(2, "%02X", msg->data[i]);
+    }
+    debug(2, "\n");
+}
 
 /**
  * Initialise the JVS emulation
@@ -503,6 +512,10 @@ JVSStatus processPacket()
 
 			int analogueXData = localState->gunChannel[0] << (16 - localCapabilities->gunXBits);
 			int analogueYData = localState->gunChannel[1] << (16 - localCapabilities->gunYBits);
+			if (localState->idolmasterIsScreenPressed == 0) {
+				analogueXData = 0xffff;
+				analogueYData = 0xffff;
+			}
 			outputPacket.data[outputPacket.length] = REPORT_SUCCESS;
 			outputPacket.data[outputPacket.length + 1] = analogueXData >> 8;
 			outputPacket.data[outputPacket.length + 2] = analogueXData;
@@ -644,6 +657,9 @@ JVSStatus readPacket(JVSPacket *packet)
 		checksumComputed = (checksumComputed + packet->data[inputIndex]) & 0xFF;
 		inputIndex++;
 	}
+	
+	debug(2, "Input Packet:");
+	printPacket(packet);
 
 	unsigned char checksumReceived = inputBuffer[packet->length - 1];
 
@@ -671,6 +687,10 @@ JVSStatus readPacket(JVSPacket *packet)
  */
 JVSStatus writePacket(JVSPacket *packet)
 {
+
+	debug(2, "Output Packet:");
+	printPacket(packet);
+
 	/* Don't return anything if there isn't anything to write! */
 	if (packet->length < 1)
 		return JVS_STATUS_SUCCESS;

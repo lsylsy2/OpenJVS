@@ -133,6 +133,7 @@ typedef struct
     int analogueChannel[JVS_MAX_STATE_SIZE];
     int gunChannel[JVS_MAX_STATE_SIZE];
     int rotaryChannel[JVS_MAX_STATE_SIZE];
+	int idolmasterIsScreenPressed;
 } JVSState;
 
 typedef struct

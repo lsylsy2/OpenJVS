@@ -9,13 +9,13 @@
 DEFAULT_GAME generic-driving
 
 # Setup which IO to emulate by default
-EMULATE SEGA_TYPE_3_IO
+EMULATE NAMCO_FCB_IO
 
 # Setup the sense line
 # SENSE_LINE_TYPE 0 - This will turn the sense line off
 # SENSE_LINE_TYPE 1 - The Raspberry Pi Sense Line
 # SENSE_LINE_TYPE 2 - The switch style of sense line
-SENSE_LINE_TYPE 0
+SENSE_LINE_TYPE 1
 SENSE_LINE_PIN 12
 
 # Setup the debug mode for outputting debug information
@@ -24,5 +24,5 @@ SENSE_LINE_PIN 12
 DEBUG_MODE 0
 
 # Setup the device path
-DEVICE_PATH /dev/ttyUSB0
+DEVICE_PATH /dev/ttyS3
 

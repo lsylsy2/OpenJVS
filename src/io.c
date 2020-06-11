@@ -64,6 +64,13 @@ int setSwitch(JVSPlayer player, JVSInput switchNumber, int value)
 	return 1;
 }
 
+int setIdolmasterIsScreenPressed(int value)
+{
+    state.idolmasterIsScreenPressed = value;
+    debug(1, "setIdolmasterIsScreenPressed %d\n", value);
+    return 1;
+}
+
 int incrementCoin(JVSPlayer player)
 {
 	if (player == SYSTEM)

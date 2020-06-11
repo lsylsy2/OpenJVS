@@ -28,7 +28,7 @@ JVSConfig config = {
     .defaultGamePath = "generic",
     .debugLevel = 0,
     .devicePath = "/dev/ttyUSB0",
-    .capabilities = SEGA_TYPE_3_IO,
+    .capabilities = NAMCO_FCB_IO,
 };
 
 JVSConfig *getConfig()
