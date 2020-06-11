@@ -34,8 +34,8 @@ int initIO(JVSCapabilities *capabilitiesSetup)
 	for (int rotaryChannels = 0; rotaryChannels < capabilities.rotaryChannels; rotaryChannels++)
 		state.rotaryChannel[rotaryChannels] = 0;
 
-	for (int player = 0; player < capabilities.coins; player++)
-		state.coinCount[player] = 1;
+	// for (int player = 0; player < capabilities.coins; player++)
+		// state.coinCount[player] = 1;
 
 	analogueMax = pow(2, capabilities.analogueInBits) - 1;
 	gunXMax = pow(2, capabilities.gunXBits) - 1;
@@ -90,6 +90,20 @@ int setAnalogue(JVSInput channel, double value)
 
 int setGun(JVSInput channel, double value)
 {
+    if (strstr(capabilities.name, "FCB")) {
+        int minValue = 0x0002;
+        int maxValue = 0xffff - minValue;
+        if (channel % 2 == 0)
+        {
+            state.gunChannel[channel] = minValue + (int)((double)value * (double)(maxValue - minValue));
+        }
+        else
+        {
+            state.gunChannel[channel] = minValue + (int)((double)((double)1.0 - value) * (double)(maxValue - minValue));
+        }
+        return 1;
+    }
+    
 	if (channel % 2 == 0)
 	{
 		state.gunChannel[channel] = (int)((double)value * (double)gunXMax);

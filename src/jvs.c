@@ -59,14 +59,20 @@ void idolmasterDealWithGPO(unsigned char gpo)
 	}
 }
 
+void printRAW(unsigned char *msg, int len)
+{
+    if (getConfig()->debugLevel < 2) return;
+    for (uint32_t i = 0; i < len; i++)
+    {
+      debug(2, "%02X", msg[i]);
+    }
+    debug(2, "\n");
+}
+
 void printPacket(JVSPacket *msg)
 {
     if (getConfig()->debugLevel < 2) return;
-    for (uint32_t i = 0; i < msg->length; i++)
-    {
-      debug(2, "%02X", msg->data[i]);
-    }
-    debug(2, "\n");
+    printRAW(msg->data, msg->length);
 }
 
 /**
@@ -541,6 +547,45 @@ JVSStatus processPacket()
 					}
 					break;
 
+                    /*
+					 Looks like resetting touch screen controller. Example:
+                     E0 01 05
+                     70 62 02 00
+                     DA 
+                     E0 00 04 01
+                     01 00
+                     06
+                     READGUN will return 04(Busy) for a while, but we can just skip it.
+					 */
+					case 0x62:
+					{
+						size = 0xff; // End this conversation
+						outputPacket.data[outputPacket.length] = 0x01;
+						outputPacket.data[outputPacket.length + 1] = 0x00;
+						outputPacket.length += 2;
+					}
+					break;
+
+                    /*
+					 Checking touch screen controller state, will reply final one directly.
+                     E0 01 04
+                     70 60 F8
+                     CD 
+                     E0 00 06 01
+                     01 02 02 01
+                     0D
+					 */
+					case 0x60:
+					{
+						size = 0xff; // End this conversation
+						outputPacket.data[outputPacket.length] = 0x01;
+						outputPacket.data[outputPacket.length + 1] = 0x02;
+						outputPacket.data[outputPacket.length + 2] = 0x02;
+						outputPacket.data[outputPacket.length + 3] = 0x01;
+						outputPacket.length += 4;
+					}
+					break;
+
 					// case 0x05:
 					// {
 
@@ -720,6 +765,8 @@ JVSStatus writePacket(JVSPacket *packet)
 	}
 	outputBuffer[outputIndex] = checksum;
 	outputIndex += 1;
+    
+    printRAW(outputBuffer, outputIndex);
 
 	int written = 0, timeout = 0;
 	while (written < outputIndex)

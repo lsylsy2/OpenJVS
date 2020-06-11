@@ -203,6 +203,11 @@ void *deviceThread(void *_args)
                 {
                     double scaled = ((double)((double)event.value * (double)inputs.absMultiplier[event.code]) - inputs.absMin[event.code]) / (inputs.absMax[event.code] - inputs.absMin[event.code]);
 
+                    // WARNING TODO TEMPORARILY FOR 16:9 to 4:3(16:12)
+                    if ((strstr(getCapabilities()->name, "FCB")) && (inputs.abs[event.code].output %2 == 0)) {
+                        scaled = (scaled - 0.5) / 3.0 * 4.0 + 0.5;
+                    }
+
                     /* Make sure it doesn't go over 1 or below 0 if its multiplied */
                     scaled = scaled > 1 ? 1 : scaled;
                     scaled = scaled < 0 ? 0 : scaled;
