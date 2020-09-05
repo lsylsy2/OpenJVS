@@ -391,7 +391,7 @@ int getInputs(DeviceList *deviceList)
         for (int i = 0; i < (int)strlen(name); i++)
         {
             name[i] = tolower(name[i]);
-            if (name[i] == ' ' || name[i] == '/' || name[i] == '(' || name[i] == ')')
+            if (name[i] == ' ' || name[i] == '/' || name[i] == '(' || name[i] == ')' || name[i] == ':')
             {
                 name[i] = '-';
             }
